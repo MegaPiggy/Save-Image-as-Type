@@ -22,7 +22,26 @@ function getSuggestedFilename(src, type){
 	}
 	return filename+'.'+type;
 }
-function download(url, filename, tabId) {
+
+function toDataURL(url, callback) {
+	var xhr = new XMLHttpRequest();
+	xhr.onload = function() {
+	  var reader = new FileReader();
+	  reader.onloadend = function() {
+		callback(reader.result);
+	  }
+	  reader.readAsDataURL(xhr.response);
+	};
+	xhr.open('GET', url);
+	xhr.responseType = 'blob';
+	xhr.send();
+}
+
+function getExtension(url) {
+    return url.split(/[#?]/)[0].split('.').pop().trim();
+}
+
+function download(url, filename) {
 	chrome.downloads.download(
 		{
 			url: url,
@@ -36,7 +55,7 @@ function download(url, filename, tabId) {
 		}
 	);
 }
-function saveAsType(img, type, tabId) {
+function saveAsType(img, type) {
 	if(!canvas){
 		canvas = document.createElement('canvas');
 	}
@@ -47,12 +66,18 @@ function saveAsType(img, type, tabId) {
 	context.drawImage(img, 0, 0);
 	var dataurl =  canvas.toDataURL(mimeType);
 	var filename = getSuggestedFilename(img.src, type);
-	download(dataurl, filename, tabId);
+	download(dataurl, filename);
 }
-function imageLoadCallback(info, type, tabId) {
+function saveUsingDataUrl(srcUrl) {
+	var filename = getSuggestedFilename(srcUrl, getExtension(srcUrl));
+	toDataURL(srcUrl, function(dataUrl) {
+	  download(dataUrl, filename);
+	})
+}
+function imageLoadCallback(info, type) {
 	var img = new Image();
 	img.onload = function() {
-		saveAsType(this, type, tabId);
+		saveAsType(this, type);
 	};
 	img.onerror = function() {
 		alert(chrome.i18n.getMessage("errorOnLoading")+': \n' + this.src);
@@ -62,9 +87,9 @@ function imageLoadCallback(info, type, tabId) {
 
 var canvas;
 
-//chrome.contextMenus.onClicked.addListener(function callback(info, tab){
-//	console.log(info);
-//});
+chrome.contextMenus.onClicked.addListener(function callback(info, tab){
+	console.log(info);
+});
 
 ['JPG','PNG','WebP'].forEach(function (type){
 	chrome.contextMenus.create({
@@ -73,12 +98,24 @@ var canvas;
 		"contexts" : ["image"],
 		"onclick" : function (info, tab) {
 			if(info.mediaType=='image' && info.srcUrl){
-				imageLoadCallback(info, type.toLowerCase(), tab.id);
+				imageLoadCallback(info, type.toLowerCase());
 			}else{
 				alert(chrome.i18n.getMessage("errorIsNotImage"));
 			}
 		}
 	});
+});
+chrome.contextMenus.create({
+	"title" : chrome.i18n.getMessage("Save"),
+	"type" : "normal",
+	"contexts" : ["image"],
+	"onclick" : function (info, tab) {
+		if(info.mediaType=='image' && info.srcUrl){
+			saveUsingDataUrl(info.srcUrl);
+		}else{
+			alert(chrome.i18n.getMessage("errorIsNotImage"));
+		}
+	}
 });
 chrome.contextMenus.create({
 	"type" : "separator",
