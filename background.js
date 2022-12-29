@@ -1,4 +1,3 @@
-
 function getSuggestedFilename(src, type){
 	//special for chrome web store apps
 	if(src.match(/googleusercontent\.com\/[0-9a-zA-Z]{30,}/)){
@@ -17,7 +16,7 @@ function getSuggestedFilename(src, type){
 	if(filename.length > 32){
 		filename = filename.substr(0,32);
 	}
-	filename = filename.replace(/[^0-9a-z]+$/i,'').trim(); //去除末尾的非词符号
+	filename = filename.replace(/[^0-9a-z]+$/i,'').trim(); //Exclusion-end non-correspondence code
 	if(!filename){
 		filename = 'image';
 	}
