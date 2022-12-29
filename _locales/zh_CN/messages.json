@@ -8,6 +8,9 @@
 	"extDescription": {
 		"message": "为图片添加右键菜单：另存为PNG，另存为JPG，另存为WebP."
 	},
+	"Save": {
+		"message": "保存"
+	},
 	"Save_as": {
 		"message": "另存为"
 	},

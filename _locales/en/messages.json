@@ -8,6 +8,9 @@
 	"extDescription": {
 		"message": "Save image as PNG, JPG or WebP by context menu on image."
 	},
+	"Save": {
+		"message": "Save"
+	},
 	"Save_as": {
 		"message": "Save as"
 	},
