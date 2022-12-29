@@ -68,6 +68,12 @@ function saveAsType(img, type) {
 	var filename = getSuggestedFilename(img.src, type);
 	download(dataurl, filename);
 }
+function saveAsGif(srcUrl) {
+	var filename = getSuggestedFilename(srcUrl, 'gif');
+	toDataURL(srcUrl, function(dataUrl) {
+	  download(dataUrl, filename);
+	})
+}
 function saveUsingDataUrl(srcUrl) {
 	var filename = getSuggestedFilename(srcUrl, getExtension(srcUrl));
 	toDataURL(srcUrl, function(dataUrl) {
@@ -75,14 +81,19 @@ function saveUsingDataUrl(srcUrl) {
 	})
 }
 function imageLoadCallback(info, type) {
-	var img = new Image();
-	img.onload = function() {
-		saveAsType(this, type);
-	};
-	img.onerror = function() {
-		alert(chrome.i18n.getMessage("errorOnLoading")+': \n' + this.src);
-	};
-	img.src = info.srcUrl;
+	if (type == "gif") {
+		saveAsGif(info.srcUrl);
+	}
+	else {
+		var img = new Image();
+		img.onload = function() {
+			saveAsType(this, type);
+		};
+		img.onerror = function() {
+			alert(chrome.i18n.getMessage("errorOnLoading")+': \n' + this.src);
+		};
+		img.src = info.srcUrl;
+	}
 }
 
 var canvas;
@@ -91,7 +102,7 @@ chrome.contextMenus.onClicked.addListener(function callback(info, tab){
 	console.log(info);
 });
 
-['JPG','PNG','WebP'].forEach(function (type){
+['JPG','PNG','GIF','WebP'].forEach(function (type){
 	chrome.contextMenus.create({
 		"title" : chrome.i18n.getMessage("Save_as")+' '+type+"...",
 		"type" : "normal",
